@@ -1,5 +1,5 @@
 
-describe("umlDiagram services", function(){
+xdescribe("umlDiagram services", function(){
   beforeEach(function(){
     module('fortuneAdmin.umlDiagram.services');
   });
