@@ -10,9 +10,13 @@ angular.module('fortuneAdmin.Directives', [])
         currentResource: '=',
         filter: '=',
         filterChangedCb: '&',
+        deleteCallback: '&',
         getTypeaheadList: '&'
       },
       templateUrl: CONFIG.fortuneAdmin.prepareViewTemplateUrl('directives/faGrid'),
+      controller: ['$scope', '$rootScope', function($scope, $rootScope){
+        $scope.fortuneAdminRoute = $rootScope.fortuneAdminRoute;
+      }],
       link: function(scope){
         scope.typeaheadList = function(str, name, type){
           console.log('calling getTypeaheadList ', str, name, type);

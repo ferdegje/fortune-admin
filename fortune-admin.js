@@ -1,5 +1,383 @@
-angular.module('templates-main', []);
+angular.module('templates-main', ['/views/directives/attribute.html', '/views/directives/description.html', '/views/directives/example.html', '/views/directives/gui.html', '/views/directives/requestResponse.html', '/views/directives/response.html', '/views/docs.html', '/views/directives/faEditable.html', '/views/directives/faGrid.html', '/views/directives/uml/canvas.html', '/views/resources.html', '/views/uml.html', '/views/docsCells.html', '/views/mynavbar.html', '/views/resourcesCells.html', '/views/umlCells.html']);
 
+angular.module("/views/directives/attribute.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/attribute.html",
+    "<div>\n" +
+    "    <!-- string -->\n" +
+    "    <div ng-if=\"value.type == 'String'\">\n" +
+    "        <input type=\"text\" ng-model=\"data[name]\" class=\"form-control\" />\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <!-- date -->\n" +
+    "    <div ng-if=\"value.type == 'Date' || value == 'Date'\">\n" +
+    "        <input type=\"date\" class=\"form-control\" ng-model=\"data[name]\" />\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <!-- link to another resource -->\n" +
+    "    <div ng-if=\"value.ref\">\n" +
+    "        link to {{value.ref}}\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <!-- array of links to another resources -->\n" +
+    "    <div ng-if=\"value[0].ref\">\n" +
+    "        array of links to {{value[0].ref}}\n" +
+    "    </div>\n" +
+    "</div>");
+}]);
+
+angular.module("/views/directives/description.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/description.html",
+    "<div class=\"resource-description\">\n" +
+    "    <h4><strong>The {{resource.name}} object</strong></h4>\n" +
+    "    <h5><strong>Attributes</strong></h5>\n" +
+    "    <table>\n" +
+    "        <tr ng-repeat=\"attrName in resource.schema | notSorted\" ng-init=\"attrValue = resource.schema[attrName]\">\n" +
+    "            <td><strong>{{attrName}}:</strong></td>\n" +
+    "            <td>\n" +
+    "                {{attrValue.type || attrValue}}\n" +
+    "                <p ng-if=\"attrValue['docs:description']\">\n" +
+    "                    {{attrValue['docs:description']}}\n" +
+    "                </p>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "    </table>\n" +
+    "</div>");
+}]);
+
+angular.module("/views/directives/example.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/example.html",
+    "<div class=\"resource-example\">\n" +
+    "    <h4>{{ resource.name+' object example' | uppercase }}</h4>\n" +
+    "    <span>\n" +
+    "       &#123;<br/>\n" +
+    "       <span ng-repeat=\"attrName in resource.schema | notSorted\" ng-init=\"attrValue = resource.schema[attrName]\">\n" +
+    "           &ensp;&ensp;\n" +
+    "           <span>&#34;{{attrName}}&#34;:</span>\n" +
+    "           <span>&#34;{{attrValue['docs:example']}}&#34;</span>\n" +
+    "           <span ng-if=\"!$last\">,<br/></span>\n" +
+    "       </span>\n" +
+    "       <br/>&#125;\n" +
+    "    </span>\n" +
+    "</div>");
+}]);
+
+angular.module("/views/directives/gui.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/gui.html",
+    "<div class=\"resource-giu\">\n" +
+    "    <h4><strong>/{{resource.name}}:</strong> Operations about {{resource.name}} </h4>\n" +
+    "\n" +
+    "    <!-- Methods menu -->\n" +
+    "    <div class=\"btn-group\">\n" +
+    "        <button type=\"button\" class=\"btn btn-default\" ng-repeat=\"httpMethod in httpMethods\"\n" +
+    "                ng-class=\"{'active':selectedMethod == httpMethod}\"\n" +
+    "                ng-click=\"selectMethod(httpMethod)\">\n" +
+    "            {{httpMethod | uppercase }}\n" +
+    "        </button>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <request-response-container resource=\"resource\" method=\"selectedMethod\"></request-response-container>\n" +
+    "</div>");
+}]);
+
+angular.module("/views/directives/requestResponse.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/requestResponse.html",
+    "<div class=\"request col-md-12\">\n" +
+    "    <h3>Request</h3>\n" +
+    "    <div ng-if=\"method == 'get'\">\n" +
+    "        <table class=\"table\" ng-if=\"ids.length !== 0\">\n" +
+    "            <tr>\n" +
+    "                <td>Parameter</td>\n" +
+    "                <td>Value</td>\n" +
+    "                <td>Actions</td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-repeat=\"id in ids\">\n" +
+    "                <td>{{PK}}</td>\n" +
+    "                <td>{{id}}</td>\n" +
+    "                <td>\n" +
+    "                    <a href ng-click=\"removeRequestParameter(id)\"><span class=\"glyphicon glyphicon-remove\"></span></a>\n" +
+    "                </td>\n" +
+    "            </tr>\n" +
+    "        </table>\n" +
+    "        <table class=\"table\">\n" +
+    "            <tr>\n" +
+    "                <td>{{PK}}</td>\n" +
+    "                <td><input type=\"text\" class=\"form-control\" ng-model=\"id\"/></td>\n" +
+    "                <td><button type=\"button\" ng-click=\"addRequestParameter(id)\" class=\"btn btn-default btn-sm\">Add {{resource.name}}</button></td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-if=\"ids.length == 1\">\n" +
+    "                <td>Related resource name (one level deep):</td>\n" +
+    "                <td><input type=\"text\" class=\"form-control\" ng-model=\"relatedResource.name\"/><td>\n" +
+    "                <td></td>\n" +
+    "            </tr>\n" +
+    "        </table>\n" +
+    "        <button type=\"button\" ng-click=\"sendGETRequest(resource, ids, relatedResource.name)\" class=\"btn btn-default btn-primary\">Send request</button>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"method == 'post'\" ng-init=\"data={}\">\n" +
+    "        <table class=\"table\">\n" +
+    "            <tr ng-repeat=\"attrName in resource.schema | notSorted\">\n" +
+    "                <td>{{attrName}} <span ng-if=\"PK == attrName\">(primary key)</span></td>\n" +
+    "                <td>\n" +
+    "                    <resource-attribute name=\"attrName\" value=\"resource.schema[attrName]\"></resource-attribute>\n" +
+    "                </td>\n" +
+    "            </tr>\n" +
+    "        </table>\n" +
+    "        <button type=\"button\" ng-click=\"sendPOSTRequest(resource, data)\" class=\"btn btn-default btn-primary\">Send request</button>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"method == 'delete'\">\n" +
+    "        <table class=\"table\">\n" +
+    "            <tr>\n" +
+    "                <td>{{PK}}</td>\n" +
+    "                <td><input type=\"text\" class=\"form-control\" ng-model=\"id\"/></td>\n" +
+    "            </tr>\n" +
+    "        </table>\n" +
+    "        <button type=\"button\" ng-click=\"sendDELETERequest(resource, id)\" class=\"btn btn-default btn-primary\">Send request</button>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <response ng-if=\"response[resource.name][method]\" response=\"response[resource.name][method]\"></response>\n" +
+    "</div>");
+}]);
+
+angular.module("/views/directives/response.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/response.html",
+    "<div class=\"response\">\n" +
+    "    <h3>Response</h3>\n" +
+    "    <table class=\"table\">\n" +
+    "        <tr>\n" +
+    "            <td>Status</td>\n" +
+    "            <td>{{response.status}}</td>\n" +
+    "        </tr>\n" +
+    "        <tr>\n" +
+    "            <td>Body</td>\n" +
+    "            <td><pre>{{response.body | json}}</pre></td>\n" +
+    "        </tr>\n" +
+    "    </table>\n" +
+    "</div>");
+}]);
+
+angular.module("/views/docs.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/docs.html",
+    "<section id=\"fortune-admin\" ng-class=\"{wmargin: navbarEnabled}\">\n" +
+    "    <div ng-if=\"navbarEnabled\">\n" +
+    "        <fortune-admin-navbar></fortune-admin-navbar>\n" +
+    "    </div>\n" +
+    "    <div id=\"guide\" ng-if=\"resources.length !== 0\" ng-class=\"{ 'stick': selected !== undefined }\">\n" +
+    "        <div>\n" +
+    "            <div class=\"list-group\">\n" +
+    "                <a href class=\"list-group-item\" ng-class=\"itemClass(resource.name)\" ng-repeat=\"resource in resources\"\n" +
+    "                   ng-click=\"select(resource.name)\">\n" +
+    "                    {{ resource.name }}\n" +
+    "                </a>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div id=\"api-docs\" ng-init=\"selectedMode = 'example'\">\n" +
+    "        <ul class=\"nav nav-tabs\" role=\"tablist\">\n" +
+    "            <li ng-class=\"{ 'active': selectedMode == 'example' }\" ng-click=\"selectedMode='example'\">\n" +
+    "                <a href=\"#\">Example</a>\n" +
+    "            </li>\n" +
+    "            <li ng-class=\"{ 'active': selectedMode == 'interaction' }\" ng-click=\"selectedMode='interaction'\">\n" +
+    "                <a href=\"#\">Interaction</a>\n" +
+    "            </li>\n" +
+    "        </ul>\n" +
+    "        <div class=\"tab-content\" ng-if=\"selectedMode == 'example'\">\n" +
+    "            <div class=\"single-resource\" id=\"{{resource.name}}\" ng-repeat=\"resource in resources\">\n" +
+    "                <resource-description resource=\"resource\"></resource-description>\n" +
+    "                <resource-example resource=\"resource\"></resource-example>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"tab-content\" ng-if=\"selectedMode == 'interaction'\">\n" +
+    "            <div class=\"single-resource\" id=\"{{resource.name}}\" ng-repeat=\"resource in resources\">\n" +
+    "                <resource-gui resource=\"resource\"></resource-gui>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</section>");
+}]);
+
+angular.module("/views/directives/faEditable.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/faEditable.html",
+    "<section>\n" +
+    "  <div ng-switch=\"schemaType\">\n" +
+    "    <div ng-switch-when=\"String\">\n" +
+    "      <a href=\"#\" onaftersave=\"apply(value)\" editable-text=\"value\">{{value || 'Not set.'}}</a>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"Number\">\n" +
+    "      <a href=\"#\" onaftersave=\"apply(value)\" editable-number=\"value\">{{value || 'Not set.'}}</a>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"Date\">\n" +
+    "      <a href=\"#\" onaftersave=\"apply(value)\" editable-date=\"value\">{{value || 'Not set.'}}</a>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"Boolean\">\n" +
+    "      <a href=\"#\" onaftersave=\"apply(value)\" editable-checkbox=\"value\">{{value ? 'Yep' : 'Nope'}}</a>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</section>");
+}]);
+
+angular.module("/views/directives/faGrid.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/faGrid.html",
+    "<table class=\"table table-bordered\">\n" +
+    "    <tr>\n" +
+    "        <th>\n" +
+    "            <div ng-class=\"{'column-filter': _showFilter}\">\n" +
+    "                <span>ID</span>\n" +
+    "                <div ng-show=\"_showFilter\">\n" +
+    "                    <input type=\"text\" class=\"form-control\" ng-model=\"idQuery\" typeahead=\"item.id for item in getTypeaheadList({str: $viewValue, name: 'id', type: type})\" typeahead-on-select=\"applyFilter({item: $item, model: $model, label: $label}, name, type)\">\n" +
+    "                </div>\n" +
+    "                <span class=\"glyphicon glyphicon-filter\" ng-show=\"!_showFilter\" ng-click=\"_showFilter = !_showFilter\"></span>\n" +
+    "                <span class=\"glyphicon glyphicon-remove\" ng-show=\"_showFilter\" ng-click=\"_showFilter = false; idQuery=''; dropFilter(name, idQuery)\"></span>\n" +
+    "            </div>\n" +
+    "        </th>\n" +
+    "        <th ng-repeat=\"(name, type) in currentResource.schema | filterLinks\" ng-class=\"{'column-filter': showFilter}\" ng-init=\"type = type.type || type\">\n" +
+    "            <div>\n" +
+    "                <span>{{name}}</span>\n" +
+    "                <span class=\"glyphicon glyphicon-filter\" ng-show=\"!showFilter\" ng-click=\"showFilter = !showFilter\"></span>\n" +
+    "                <span class=\"glyphicon glyphicon-remove\" ng-show=\"showFilter\" ng-click=\"showFilter = false; taQuery=''; dropFilter(name, taQuery)\"></span>\n" +
+    "            </div>\n" +
+    "            <div ng-switch=\"type\">\n" +
+    "                <div ng-switch-when=\"String\" ng-show=\"showFilter\">\n" +
+    "                    <input type=\"text\" class=\"form-control\" ng-model=\"taQuery\" typeahead=\"item.{{name}} for item in getTypeaheadList({str: $viewValue, name: name, type: type})\" typeahead-on-select=\"applyFilter({item: $item, model: $model, label: $label}, name, type)\">\n" +
+    "                </div>\n" +
+    "                <div ng-switch-when=\"Number\" ng-show=\"showFilter\">\n" +
+    "                    <div class=\"input-group\">\n" +
+    "                        <span class=\"input-group-addon\">From:</span>\n" +
+    "                        <input type=\"number\" ng-model=\"Query.start\" class=\"form-control\" ng-change=\"applyFilter(Query, name, type)\"/>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"input-group\">\n" +
+    "                        <span class=\"input-group-addon\">To:</span>\n" +
+    "                        <input class=\"form-control\" type=\"number\" ng-model=\"Query.end\"  ng-change=\"applyFilter(Query, name, type)\"/>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "                <div ng-switch-when=\"Date\" ng-show=\"showFilter\">\n" +
+    "                    <div class=\"input-group\">\n" +
+    "                        <span class=\"input-group-addon\">From:</span>\n" +
+    "                        <input type=\"date\" class=\"form-control\" ng-model=\"Query.start\" ng-change=\"applyFilter(Query, name, type)\"/>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"input-group\">\n" +
+    "                        <span class=\"input-group-addon\">To:</span>\n" +
+    "                        <input type=\"date\" class=\"form-control\" ng-model=\"Query.end\"  ng-change=\"applyFilter(Query, name, type)\"/>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "                <div ng-switch-when=\"Boolean\" ng-show=\"showFilter\">\n" +
+    "                    <div class=\"btn-group btn-group-sm\">\n" +
+    "                        <button class=\"btn btn-sm\" ng-class=\"{'btn-default': !Query.yep, 'btn-info': Query.yep}\" type=\"button\" ng-click=\"Query.yep = true; Query.nope=false; applyFilter(true, name, type);\">Yep</button>\n" +
+    "                        <button class=\"btn btn-sm\" ng-class=\"{'btn-default': !Query.nope, 'btn-info': Query.nope}\" type=\"button\" ng-click=\"Query.yep = false; Query.nope=true; applyFilter(false, name, type);\">Nope</button>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </th>\n" +
+    "        <th ng-repeat=\"(linkName, link) in links\">{{resolveFieldName(linkName)}}</th>\n" +
+    "        <th>Actions</th>\n" +
+    "    </tr>\n" +
+    "    <tr ng-repeat=\"entity in data\">\n" +
+    "        <td>{{entity.id}}</td>\n" +
+    "        <td ng-repeat=\"(path, type) in currentResource.schema | filterLinks\" ng-init=\"type = type.type || type\">\n" +
+    "            <fa-editable ng-model=\"entity[path]\" path=\"path\" resource-name=\"{{plurResourceName}}\" resource-id=\"{{entity.id}}\" schema-type=\"type\"></fa-editable>\n" +
+    "        </td>\n" +
+    "        <td ng-repeat=\"(linkName, link) in links\">\n" +
+    "            <div ng-if=\"linkToMany(linkName)\">\n" +
+    "                <a ng-href=\"{{ fortuneAdminRoute('subresource', {parent: currentResource.route, id: entity.id, name: link.type, inverse: resolveInverse(linkName)}) }}\">Navigate to {{link.type}}</a>\n" +
+    "            </div>\n" +
+    "            <div ng-if=\"!linkToMany(linkName)\">\n" +
+    "                <div ng-init=\"fname = resolveFieldName(linkName)\"></div>\n" +
+    "                <!--Initialize links if they do not come from server-->\n" +
+    "                <div ng-init=\"entity.links = entity.links || {}\"></div>\n" +
+    "                <fa-ref ng-model=\"entity.links[fname]\" ref=\"currentResource.schema[fname]\" resource-name=\"{{ plurResourceName }}\" resource-id=\"{{ entity.id }}\"></fa-ref>\n" +
+    "            </div>\n" +
+    "        </td>\n" +
+    "        <td>\n" +
+    "            <button type=\"button\" ng-click=\"deleteCallback({index: $index, id: entity.id})\" class=\"btn btn-xs btn-danger\">Delete</button>\n" +
+    "        </td>\n" +
+    "    </tr>\n" +
+    "</table>");
+}]);
+
+angular.module("/views/directives/uml/canvas.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/directives/uml/canvas.html",
+    "<div id=\"umlcanvas\">\n" +
+    "</div>");
+}]);
+
+angular.module("/views/resources.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/resources.html",
+    "<section id=\"fortune-admin\" ng-class=\"{wmargin: navbarEnabled}\">\n" +
+    "  <div ng-if=\"navbarEnabled\">\n" +
+    "    <fortune-admin-navbar></fortune-admin-navbar>\n" +
+    "  </div>\n" +
+    "  <h4 class=\"text-center\">{{ parentResourceName | uppercase }} {{ parentId ? parentId + ' /' : null}} {{plurResourceName | uppercase}}</h4>\n" +
+    "  <fa-grid data=\"data\" links=\"links\" resources=\"resources\" current-resource=\"currentResource\" filter=\"filter\" filter-changed-cb=\"ResourcesCtrl.filterChangedCb()\" get-typeahead-list=\"getTypeaheadList(str, name, type)\" delete-callback=\"ResourcesCtrl.deleteRow(index, id)\"></fa-grid>\n" +
+    "  <div class=\"col-md-3\">\n" +
+    "    <div ng-hide=\"PK === 'id'\">\n" +
+    "      <label>Enter {{ PK }} for new {{ currentResource.name }}</label>\n" +
+    "      <input type=\"text\" ng-model=\"PrimaryKey\" ng-required=\"true\" class=\"form-control\"/>\n" +
+    "    </div>\n" +
+    "    <button type=\"button\" ng-click=\"ResourcesCtrl.addRow(PrimaryKey)\" class=\"btn btn-default btn-sm\" ng-disabled=\"PK !== 'id' && !PrimaryKey\">Create new row</button>\n" +
+    "  </div>\n" +
+    "</section>");
+}]);
+
+angular.module("/views/uml.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/uml.html",
+    "<section id=\"fortune-admin\" ng-class=\"{wmargin: navbarEnabled}\">\n" +
+    " <div ng-if=\"navbarEnabled\">\n" +
+    "    <fortune-admin-navbar></fortune-admin-navbar>\n" +
+    "  </div>\n" +
+    "  <section ng-if=\"resources.length !== 0\">\n" +
+    "    <div ng-if=\"render\">\n" +
+    "      <div resources-canvas resources=\"resources\"></div>\n" +
+    "    </div>\n" +
+    "  </section>\n" +
+    "</section>");
+}]);
+
+angular.module("/views/docsCells.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/docsCells.html",
+    "<li><a data-ng-href=\"{{ r('docs_page') }}\">Docs</a></li>");
+}]);
+
+angular.module("/views/mynavbar.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/mynavbar.html",
+    "<nav class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\" bs-navbar>\n" +
+    "    <div class=\"container-fluid\">\n" +
+    "        <div class=\"navbar-header\">\n" +
+    "            <a class=\"navbar-brand\" href=\"#\"><b>Fortune Admin</b></a>\n" +
+    "        </div>\n" +
+    "        <div class=\"collapse navbar-collapse\">\n" +
+    "          <ul class=\"nav navbar-nav\">\n" +
+    "            <fortune-admin-resources-cells></fortune-admin-resources-cells>\n" +
+    "            <fortune-admin-uml-cells></fortune-admin-uml-cells>\n" +
+    "            <fortune-admin-docs-cells></fortune-admin-docs-cells>\n" +
+    "          </ul>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</nav>\n" +
+    "\n" +
+    "");
+}]);
+
+angular.module("/views/resourcesCells.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/resourcesCells.html",
+    "<li class=\"dropdown\">\n" +
+    "  <a href=\"#\" class=\"dropdown-toggle\">Resources <b class=\"caret\"></b></a>\n" +
+    "  <ul class=\"dropdown-menu\">\n" +
+    "    <li ng-repeat=\"service in services\">\n" +
+    "      <a ng-click=\"service.collapse = !service.collapse; $event.stopPropagation();\">{{service.name}}</a>\n" +
+    "      <div collapse=\"service.collapse\">\n" +
+    "        <div ng-repeat=\"resource in service.resources | orderBy:'name'\">\n" +
+    "          <a data-ng-href=\"{{ r('resource', {name: resource.route }) }}\">{{ resource.route }}</a>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </li>\n" +
+    "  </ul>\n" +
+    "</li>");
+}]);
+
+angular.module("/views/umlCells.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("/views/umlCells.html",
+    "<li><a data-ng-href=\"{{ r('uml_diagram') }}\">UML</a></li>");
+}]);
 
 /*(function(){
   if (!window.CONFIG) window.CONFIG = {};
@@ -522,9 +900,13 @@ angular.module('fortuneAdmin.Directives', [])
         currentResource: '=',
         filter: '=',
         filterChangedCb: '&',
+        deleteCallback: '&',
         getTypeaheadList: '&'
       },
       templateUrl: CONFIG.fortuneAdmin.prepareViewTemplateUrl('directives/faGrid'),
+      controller: ['$scope', '$rootScope', function($scope, $rootScope){
+        $scope.fortuneAdminRoute = $rootScope.fortuneAdminRoute;
+      }],
       link: function(scope){
         scope.typeaheadList = function(str, name, type){
           console.log('calling getTypeaheadList ', str, name, type);

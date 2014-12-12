@@ -58,7 +58,7 @@
         </td>
         <td ng-repeat="(linkName, link) in links">
             <div ng-if="linkToMany(linkName)">
-                <a ng-href="{{ fortuneAdminRoute('subresource', {parent: plurResourceName, id: entity.id, name: link.type, inverse: resolveInverse(linkName)}) }}">Navigate to {{link.type}}</a>
+                <a ng-href="{{ fortuneAdminRoute('subresource', {parent: currentResource.route, id: entity.id, name: link.type, inverse: resolveInverse(linkName)}) }}">Navigate to {{link.type}}</a>
             </div>
             <div ng-if="!linkToMany(linkName)">
                 <div ng-init="fname = resolveFieldName(linkName)"></div>
@@ -68,7 +68,7 @@
             </div>
         </td>
         <td>
-            <button type="button" ng-click="deleteRow($index, entity.id)" class="btn btn-xs btn-danger">Delete</button>
+            <button type="button" ng-click="deleteCallback({index: $index, id: entity.id})" class="btn btn-xs btn-danger">Delete</button>
         </td>
     </tr>
 </table>
